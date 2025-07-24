@@ -1,4 +1,4 @@
-# main.py
+k# main.py
 # Backend FastAPI para el Asistente de Contenido Educativo con IA para Padres.
 # Proporciona endpoints para resumir texto y extraer puntos clave,
 # devolviéndolos en español e inglés.
@@ -9,7 +9,7 @@ from pydantic import BaseModel
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
-import json # Aseguramos que json esté importado
+import json
 
 # Carga las variables de entorno desde el archivo .env
 load_dotenv()
@@ -24,18 +24,20 @@ genai.configure(api_key=GEMINI_API_KEY)
 app = FastAPI()
 
 # Configuración de CORS (Cross-Origin Resource Sharing)
+# Esto es CRUCIAL para permitir que tu frontend (React) se comunique con este backend.
+# Añadimos la URL de tu frontend desplegado en Render.
 origins = [
     "http://localhost:5173",  # URL de tu frontend React en desarrollo
-    "http://127.0.0.1:5173", # Otra posible URL de localhost
-    # "https://tu-frontend-desplegado.onrender.com", # ¡Descomentar y reemplazar con la URL de tu frontend en Render cuando lo despliegues!
+    "http://127.0.0.1:5173",  # Otra posible URL de localhost
+    "https://educational-assistant-frontend.onrender.com", # ¡CRUCIAL! URL de tu frontend en Render
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=origins,       # Permite solicitudes de estos orígenes
+    allow_credentials=True,      # Permite cookies/credenciales en solicitudes cross-origin
+    allow_methods=["*"],         # Permite todos los métodos HTTP (GET, POST, etc.)
+    allow_headers=["*"],         # Permite todos los encabezados en las solicitudes
 )
 
 # Modelo Pydantic para la entrada del request
@@ -44,17 +46,10 @@ class TextRequest(BaseModel):
 
 @app.get("/")
 async def read_root():
-    """
-    Endpoint de prueba para verificar que el backend está funcionando.
-    """
     return {"message": "Backend del Asistente Educativo funcionando. ¡Bienvenido!"}
 
 @app.post("/summarize")
 async def summarize_text(request: TextRequest):
-    """
-    Endpoint para resumir un texto y devolverlo en español e inglés,
-    pensando en un resumen para padres.
-    """
     try:
         if not GEMINI_API_KEY:
             raise ValueError("La clave API de Gemini no está configurada. Por favor, verifica tu archivo .env o variables de entorno.")
@@ -111,10 +106,6 @@ async def summarize_text(request: TextRequest):
 
 @app.post("/key-points")
 async def get_key_points(request: TextRequest):
-    """
-    Endpoint para extraer los puntos clave de un texto y devolverlos en español e inglés,
-    pensando en ideas principales para padres.
-    """
     try:
         if not GEMINI_API_KEY:
             raise ValueError("La clave API de Gemini no está configurada. Por favor, verifica tu archivo .env o variables de entorno.")
@@ -163,7 +154,7 @@ async def get_key_points(request: TextRequest):
            not isinstance(key_points_data.get("key_points_en"), list):
             raise ValueError("La respuesta de la IA no contiene los puntos clave en formato de lista en ambos idiomas.")
 
-        return key_points_data # Devuelve el JSON con los puntos clave bilingües
+        return key_points_data
 
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
