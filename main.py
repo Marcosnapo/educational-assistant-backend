@@ -1,4 +1,4 @@
-k# main.py
+# main.py
 # Backend FastAPI para el Asistente de Contenido Educativo con IA para Padres.
 # Proporciona endpoints para resumir texto y extraer puntos clave,
 # devolviéndolos en español e inglés.
